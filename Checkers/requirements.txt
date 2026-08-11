@@ -1,0 +1,4 @@
+pyrsistent
+pathos
+pyserial
+Pillow

@@ -1,0 +1,129 @@
+import socket
+import struct
+import sys
+
+# ====================================================================
+# NETWORK CONFIGURATION FOR UR3 ROBOT
+# ====================================================================
+ROBOT_HOST = "0.0.0.0"  # Listen on all available interfaces (PC acts as Server)
+ROBOT_PORT = 3000       # Network port used to communicate with UR3 Robot
+
+def start_manual_terminal():
+    # Initialize TCP Server Socket
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    
+    try:
+        server_socket.bind((ROBOT_HOST, ROBOT_PORT))
+        server_socket.listen(1)
+    except Exception as e:
+        print(f"[CRITICAL ERROR] Failed to start server on port {ROBOT_PORT}: {e}")
+        sys.exit(1)
+        
+    print(f"[STATUS] Server successfully started on port {ROBOT_PORT}.")
+    print("[STATUS] Awaiting incoming connection from UR3 Robot...")
+    print("-" * 70)
+    
+    # Block execution until the robot controller connects
+    connection, robot_address = server_socket.accept()
+    print(f"[STATUS] Robot connected successfully! UR3 IP Address: {robot_address}")
+    print("\nCOMMAND LINE INTERFACE INSTRUCTIONS (Grid coordinates range: 1 to 8):")
+    print("-" * 70)
+    print("For Regular moves / Captures / En Passant (Types 1, 2, 3):")
+    print("  Enter 6 numbers: move_type X0 Y0 X1 Y1 promotion_type")
+    print("  Example (Regular move):         1 1 1 1 3 0")
+    print("  Example (En Passant):           3 2 5 1 6 0")
+    print("-" * 70)
+    print("For Castling (Types 4 and 5) - Coordinates are AUTO-FILLED with '1':")
+    print("  Enter only 2 numbers: move_type promotion_type")
+    print("  Example (Short Castling):       4 0")
+    print("  Example (Long Castling):        5 0")
+    print("-" * 70)
+    print("To terminate the session, type: exit\n")
+    print("-" * 70)
+
+    try:
+        while True:
+            # Read input string from the terminal
+            user_input = input("Input for UR3 >> ").strip()
+            
+            # Check for termination command
+            if user_input.lower() == 'exit':
+                print("[STATUS] Terminating manual control session...")
+                break
+                
+            if not user_input:
+                continue
+                
+            try:
+                # Replace commas with spaces and split the string into tokens
+                cleaned_input = user_input.replace(',', ' ')
+                tokens = cleaned_input.split()
+                
+                if not tokens:
+                    continue
+                
+                # Extract the move_type first to determine the input mode
+                move_type = int(tokens[0])
+                
+                # Validate move_type value according to full chess specification
+                if move_type not in [1, 2, 3, 4, 5]:
+                    print(f"[WARNING] Unknown move_type ({move_type}). Use 1=Move, 2=Capture, 3=EnPassant, 4=ShortCastling, 5=LongCastling.")
+
+                # AUTO-FILL LOGIC FOR CASTLING (Types 4 and 5)
+                if move_type in [4, 5]:
+                    if len(tokens) != 2:
+                        print(f"[ERROR] For castling (4 or 5), please enter exactly 2 numbers: move_type promotion_type (e.g., '{move_type} 0')")
+                        continue
+                    
+                    # Coordinates are automatically filled with dummy '1' values
+                    from_x = 1
+                    from_y = 1
+                    to_x = 1
+                    to_y = 1
+                    promotion_type = int(tokens[1])
+                    print(f"[INFO] Castling detected. Automatically assigned coordinates: X0=1, Y0=1, X1=1, Y1=1")
+                
+                # REGULAR LOGIC FOR STANDARD MOVES (Types 1, 2, 3)
+                else:
+                    if len(tokens) != 6:
+                        print(f"[ERROR] Invalid format! For move type {move_type}, you must enter 6 integers.")
+                        print("Expected format: move_type X0 Y0 X1 Y1 promotion_type")
+                        continue
+                    
+                    # Unpack all 6 tokens
+                    from_x = int(tokens[1])
+                    from_y = int(tokens[2])
+                    to_x = int(tokens[3])
+                    to_y = int(tokens[4])
+                    promotion_type = int(tokens[5])
+                    
+                    # Coordinate Range Validation: Ensure data is strictly within 1-8 bounds
+                    if not (1 <= from_x <= 8 and 1 <= from_y <= 8 and 1 <= to_x <= 8 and 1 <= to_y <= 8):
+                        print("[ERROR] Out of bounds! Coordinates X0, Y0, X1, Y1 must be strictly between 1 and 8.")
+                        continue
+                
+                # Data Serialization (Binary Packing): 6 integers -> 6 bytes
+                packet = struct.pack('6B', move_type, from_x, from_y, to_x, to_y, promotion_type)
+                
+                # Transmit binary packet through the open network socket to the robot
+                connection.send(packet)
+                
+                # Print transmission confirmation to terminal
+                print(f"[SUCCESS] Sent packet: ( {move_type}.{from_x}.{from_y}.{to_x}.{to_y}.{promotion_type} )")
+                print("-" * 50)
+                
+            except ValueError:
+                print("[ERROR] Parsing error. Please ensure you only enter integers separated by spaces.")
+            except Exception as e:
+                print(f"[ERROR] Network transmission failure: {e}")
+                break
+                
+    finally:
+        # Gracefully clean up and close connections upon exiting
+        connection.close()
+        server_socket.close()
+        print("[STATUS] Connection with the robot closed. Server stopped.")
+
+if __name__ == "__main__":
+    start_manual_terminal()

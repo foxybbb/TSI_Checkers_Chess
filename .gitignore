@@ -22,6 +22,7 @@ Thumbs.db
 
 # ── App-generated settings / logs (per-machine, not versioned) ───────────────
 checkers_settings.json
+chess_settings.json
 *.log
 
 # ── Large binaries (ship separately) ─────────────────────────────────────────

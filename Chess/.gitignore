@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.pyc
+
+# Virtual environments
+.venv/
+venv/
+
+# Stockfish engine (large binary + source) — keep only the placeholder note
+stockfish/*
+!stockfish/PUT_STOCKFISH_HERE.txt
+
+# Local agent memory (not part of the project)
+MEMORY.md
+memory/
+
+# Scratch test scripts
+_test_*.py
+
+# Per-machine settings written by the setup dialog
+chess_settings.json
