@@ -133,7 +133,7 @@ def main():
                  font=("Segoe UI", 17, "bold"), anchor="w").pack(fill="x")
         tk.Label(inner, text=game["subtitle"], bg=CARD, fg=SUBTXT,
                  font=("Segoe UI", 10), anchor="w").pack(fill="x", pady=(2, 10))
-        btn = tk.Button(inner, text=f"▶  Play {game['title']}", bg=ACCENT,
+        btn = tk.Button(inner, text=f"Play {game['title']}", bg=ACCENT,
                         fg="#20232a", font=("Segoe UI", 12, "bold"),
                         activebackground="#e6cfa8", relief="flat", height=1,
                         cursor="hand2", command=lambda: launch(key, root))
