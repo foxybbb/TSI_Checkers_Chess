@@ -1,0 +1,9 @@
+# Python deps
+pyserial>=3.5
+
+# External (NOT pip) — install once for the virtual COM port on Windows:
+#   com0com   https://com0com.sourceforge.net/
+# The emulator's "Setup com0com" button auto-creates a COM5<->COM6 pair.
+#
+# PyVirtualSerialPorts is POSIX-only (pty/termios) and does NOT work on Windows;
+# it is used automatically only when the emulator runs under Linux/WSL.

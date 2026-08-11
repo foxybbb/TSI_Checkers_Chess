@@ -1,0 +1,28 @@
+# ── Python ───────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# ── Virtual environments ─────────────────────────────────────────────────────
+.venv/
+venv/
+env/
+
+# ── IDE / editor ─────────────────────────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+
+# ── OS / Office temp files ───────────────────────────────────────────────────
+Thumbs.db
+~$*
+*.tmp
+~WRL*.tmp
+
+# ── App-generated settings / logs (per-machine, not versioned) ───────────────
+checkers_settings.json
+*.log
+
+# ── Large binaries (ship separately) ─────────────────────────────────────────
+Chess/stockfish/
